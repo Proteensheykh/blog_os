@@ -23,18 +23,19 @@ class BlogPost(models.Model):
     day = models.CharField(max_length=3)
     content = models.TextField()
     featured = models.BooleanField(default=False)
-    date_time = models.DateTimeField(default=datetime.now())
+    date_created = models.DateTimeField(default=datetime.now())
 
     def save(self, *args, **kwargs):
 
         slug = slugify(self.title)
-        queryset = BlogPost.objects.all().filter(slug_iexact=slug).count()
+        queryset = BlogPost.objects.all().filter(slug__iexact=slug).count()
 
-        if(queryset):
+        if(queryset):   #if slug exists append position number to new slug
             slug += '-'+str(queryset)
                 
         self.slug = slug
 
+        #ensure only one post is featured at a time
         if(self.featured):
             try:
                 temp = BlogPost.objects.get(featured=True)
@@ -46,3 +47,6 @@ class BlogPost(models.Model):
                 pass
         
         super(BlogPost, self).save(*args, **kwargs)
+
+    def  __str__(self):
+        return self.title
